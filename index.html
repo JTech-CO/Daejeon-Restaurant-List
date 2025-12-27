@@ -44,15 +44,27 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="./assets/css/style.css">
 </head>
 <body class="bg-stone-50 text-slate-800">
     <div id="root"></div>
 
     <!-- 모든 스크립트 로드 및 실행 -->
     <script>
+        // GitHub Pages base path 감지
+        const pathParts = window.location.pathname.split('/').filter(part => part);
+        const lastPart = pathParts[pathParts.length - 1];
+        if (lastPart === 'index.html' || lastPart === 'index') {
+            pathParts.pop();
+        }
+        const BASE_PATH = pathParts.length > 0 ? '/' + pathParts.join('/') : '';
+        
         async function loadScript(url) {
-            const response = await fetch(url);
+            const fullUrl = BASE_PATH ? `${BASE_PATH}/${url}` : url;
+            const response = await fetch(fullUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to load ${fullUrl}: ${response.status} ${response.statusText}`);
+            }
             const code = await response.text();
             const compiled = Babel.transform(code, { presets: ['react'] }).code;
             eval(compiled);
@@ -61,7 +73,11 @@
         async function initializeApp() {
             try {
                 // 데이터 로드
-                const dataResponse = await fetch('assets/data/restaurants.json');
+                const dataUrl = BASE_PATH ? `${BASE_PATH}/assets/data/restaurants.json` : 'assets/data/restaurants.json';
+                const dataResponse = await fetch(dataUrl);
+                if (!dataResponse.ok) {
+                    throw new Error(`Failed to load data: ${dataResponse.status} ${dataResponse.statusText}`);
+                }
                 window.RESTAURANT_DATA = await dataResponse.json();
 
                 // 유틸리티 로드
@@ -84,10 +100,19 @@
                     const root = ReactDOM.createRoot(document.getElementById('root'));
                     root.render(React.createElement(window.App));
                 } else {
-                    console.error('App 컴포넌트를 찾을 수 없습니다.');
+                    throw new Error('App 컴포넌트를 찾을 수 없습니다.');
                 }
             } catch (error) {
                 console.error('초기화 실패:', error);
+                document.getElementById('root').innerHTML = `
+                    <div style="padding: 40px; text-align: center; font-family: 'Pretendard', sans-serif;">
+                        <h1 style="color: #dc2626; margin-bottom: 20px;">로드 오류가 발생했습니다</h1>
+                        <p style="color: #64748b; margin-bottom: 10px;"><strong>오류:</strong> ${error.message}</p>
+                        <p style="color: #64748b; margin-bottom: 10px;"><strong>BASE_PATH:</strong> ${BASE_PATH || '(없음)'}</p>
+                        <p style="color: #64748b; margin-bottom: 10px;"><strong>현재 URL:</strong> ${window.location.href}</p>
+                        <p style="color: #64748b; margin-top: 30px; font-size: 14px;">브라우저 콘솔을 확인하세요 (F12)</p>
+                    </div>
+                `;
             }
         }
 
