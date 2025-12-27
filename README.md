@@ -49,7 +49,7 @@ daejeon-restaurant-list/
 ### 1. 로컬에서 실행
 
 1. 프로젝트 폴더 열기
-2. `index.html` 파일을 브라우저에서 열기 [대전 맛집 리스트 실행](<https://jtech-co.github.io/Daejeon-Restaurant-List/index>)
+2. `index.html` 파일을 브라우저에서 열기 [대전 맛집 리스트 실행](<https://jtech-co.github.io/Daejeon-Restaurant-List/index.html>)
    - 로컬 웹 서버를 사용하는 것을 권장합니다 (CORS 이슈 방지)
 
 ### 2. 로컬 웹 서버 실행
